@@ -1,0 +1,30 @@
+SELECT X.DESCRICAO,
+       X.VALOR_TOTAL,
+      (X.NUMERO_VEZES / SUM(X.VALOR_TOTAL) OVER())                    * 100 AS PARTICIPACAO_TODO
+    
+	FROM (SELECT CDP.DESCRICAO,
+                 CDP.NUMERO_VEZES,
+                 CMP.VALOR_TOTAL
+                 
+                 
+         FROM     CONDICAO_PAGAMENTO   CDP
+	     INNER JOIN VENDA      VDA ON VDA.IDCONDICAO_PAGAMENTO  = CDP.IDCONDICAO_PAGAMENTO
+		 RIGHT JOIN (  SELECT PRO.DESCRICAO,
+                                        PRO.IDPRODUTO,
+                                        SUM(MOV.QUANTIDADE * PRO.PRECO) AS VALOR_TOTAL
+                                        
+                                                 
+                                   FROM PRODUTO PRO
+                                        INNER JOIN MOVIMENTO MOV ON 
+                                        MOV.IDPRODUTO = PRO.IDPRODUTO
+                                    
+                               GROUP BY PRO.DESCRICAO,
+                                        PRO.IDPRODUTO
+                                           
+                              ) CMP ON cmp.IDPRODUTO = VDA.IDVENDA
+	GROUP BY CDP.DESCRICAO,
+             CDP.NUMERO_VEZES,
+	         CMP.valor_total
+			 ) X
+ ORDER BY X.DESCRICAO,
+       X.VALOR_TOTAL

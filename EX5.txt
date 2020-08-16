@@ -1,0 +1,57 @@
+SELECT X.DATA_COMPRADA,
+       X.data_vendida,
+       X.QTD_COMPRADA,
+       X.VAL_COMPRADO,
+       X.qtd_vendida,
+       X.val_vendido
+FROM (SELECT 
+                   CPA.DATA_COMPRA        AS DATA_COMPRADA,
+                   SUM(CMP.QTD_COMPRADA)  AS QTD_COMPRADA,
+                   SUM(CMP.VAL_COMPRADO)  AS VAL_COMPRADO,
+                   0                      AS DATA_VENDIDA,
+                   0					  AS QTD_VENDIDA,
+                   0   					  AS VAL_VENDIDO
+              FROM COMPRA CPA
+                   RIGHT JOIN (  SELECT PRO.DESCRICAO,
+                                        PRO.IDPRODUTO,
+                                        SUM(MOV.QUANTIDADE) AS QTD_COMPRADA,
+                                        SUM(PRO.PRECO)      AS VAL_COMPRADO
+                                                 
+                                   FROM PRODUTO PRO
+                                        INNER JOIN MOVIMENTO MOV ON 
+                                        MOV.IDPRODUTO = PRO.IDPRODUTO
+                                    
+                               GROUP BY PRO.DESCRICAO,
+                                        PRO.IDPRODUTO
+                                           
+                              ) CMP ON cmp.IDPRODUTO = CPA.IDCOMPRA
+                        GROUP BY CPA.DATA_COMPRA      
+                              
+UNION ALL 
+       
+    SELECT      VDA.DATA_VENDA     AS DATA_VENDIDA,
+    			   0                      AS DATA_COMPRADA,
+                   0					  AS QTD_COMPRADA,
+                   0   					  AS VAL_COMPRADO,
+                   
+                   SUM(VEN.QTD_VENDIDA) AS QTD_VENDIDA,
+                   SUM(VEN.VAL_VENDIDO)  AS VAL_VENDIDO 
+              FROM VENDA VDA
+                   RIGHT JOIN (  SELECT PRO.DESCRICAO,
+                                        PRO.IDPRODUTO,
+                                        SUM(MOV.QUANTIDADE) AS QTD_VENDIDA,
+                                        SUM(PRO.PRECO)      AS VAL_VENDIDO
+                                                 
+                                   FROM PRODUTO PRO
+                                        INNER JOIN MOVIMENTO MOV ON 
+                                        MOV.IDPRODUTO = PRO.IDPRODUTO
+                                    
+                               GROUP BY PRO.DESCRICAO,
+                                        PRO.IDPRODUTO
+                                           
+                              ) VEN ON VEN.IDPRODUTO = VDA.IDVENDA
+                              WHERE VDA.DATA_VENDA BETWEEN '01/01/2015' AND '31/12/2016'
+           GROUP BY  VDA.DATA_VENDA
+           
+           ) X
+           

@@ -1,0 +1,36 @@
+ --Escreva uma consulta que liste, por fornecedor, a quantidade e o valor comprados, além da quantidade e do valor vendidos.
+ SELECT X.FORNECEDOR,
+         X.VAL_COMPRADO,
+         x.QTD_VENDIDA
+
+    FROM (  SELECT CMP.DESCRICAO         AS FORNECEDOR,
+                   SUM(CMP.QTD_COMPRADA) AS QTD_COMPRADA,
+                   SUM(CMP.VAL_COMPRADO) AS VAL_COMPRADO,
+                   SUM(COALESCE(VDA.QUANTIDADE,0)) AS QTD_VENDIDA,
+                   SUM(COALESCE(VDA.VALOR,0))      AS VAL_VENDIDO
+              FROM PRODUTO PRO
+                   RIGHT JOIN  (  SELECT FORN.RAZAO_SOCIAL,
+                                       
+                                        SUM(MOV.QUANTIDADE) AS QTD_COMPRADA,
+                                        SUM(PRO.PRECO)      AS VAL_COMPRADO,
+                                           0                AS QTD_VENDIDA                                        
+                                   FROM FORNECEDOR FORN
+                                        INNER JOIN COMPRA  CPA ON 
+                                        CPA.IDFORNECEDOR = FORN.IDFORNECEDOR
+                                    
+                                        
+                               GROUP BY FORN.DESCRICAO
+                                           
+                               UNION ALL
+                               
+                               SELECT 0                AS QTD_COMPRADA,
+                                      0                AS VAL_COMPRADO,
+                                    SUM(VDA.QUANTIDADE) AS QTD_VENDIDA
+                                      
+                                  FROM VENDA VDA
+                                      INNER JOIN MOVIMENTO MOV ON
+                                      CAST(SUBSTRING(MOV.IDORIGEM FROM 4)AS INTEGER )=VDA.IDVENDA    
+                               
+                              ) CMP ON CMP.IDPRODUTO = CPA.IDCOMPRA   
+          GROUP BY CMP.DESCRICAO                    
+         ) X

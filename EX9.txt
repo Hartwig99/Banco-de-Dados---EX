@@ -1,0 +1,20 @@
+SELECT	X.PRODUTO,
+		X.LOJA,
+		X.QUANTIDADE,
+		X.TOTAL_VENDA,
+			(X.TOTAL_VENDA / SUM(X.TOTAL_VENDA) OVER())*100	AS PARTICIPACAO
+         FROM		(
+                            SELECT	PRO.DESCRICAO					AS PRODUTO,
+                                      LJ.DESCRICAO					AS LOJA,
+                                      SUM(MOV.QUANTIDADE)				AS QUANTIDADE,
+                                      SUM(MOV.QUANTIDADE * PRO.PRECO)	AS TOTAL_VENDA
+                            FROM   PRODUTO PRO
+                                        INNER JOIN MOVIMENTO MOV ON MOV.IDPRODUTO = PRO.IDPRODUTO
+                                        INNER JOIN VENDA VDA	 ON CAST(SUBSTRING(MOV.IDORIGEM FROM 4) AS INTEGER) = VDA.IDVENDA
+                                        INNER JOIN LOJA LJ		 ON LJ.IDLOJA = VDA.IDLOJA
+                          WHERE  MOV.TIPO_MOVIMENTO = 'S'
+                            GROUP BY	PRO.DESCRICAO,
+                                        LJ.DESCRICAO
+			) X
+ORDER BY	X.PRODUTO,
+			X.LOJA

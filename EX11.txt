@@ -1,0 +1,30 @@
+11 – Escreva uma consulta que liste os nomes dos clientes, suas cidades e estados, desde que
+estes tenham quantidade comprada acima da média geral.
+*/
+
+SELECT		CLI.NOME,
+			CLI.CIDADE,
+			CLI.UF,
+			SUM(MOV.QUANTIDADE)	AS QUANTIDADE_VENDA
+FROM		CLIENTE CLI
+			INNER JOIN VENDA VDA 	 ON CLI.IDCLIENTE = VDA.IDCLIENTE
+			INNER JOIN MOVIMENTO MOV ON CAST(SUBSTRING(MOV.IDORIGEM FROM 4) AS INTEGER) = VDA.IDVENDA
+GROUP BY 	CLI.NOME,
+			CLI.CIDADE,
+			CLI.UF
+HAVING		SUM(MOV.QUANTIDADE) > (
+								   SELECT	AVG(X.QUANTIDADE_VENDA)			AS MEDIA_VENDA
+								   FROM		(
+											 SELECT		CLI.NOME,
+														CLI.CIDADE,
+														CLI.UF,
+														SUM(MOV.QUANTIDADE)	AS QUANTIDADE_VENDA
+											 FROM 		CLIENTE CLI
+														INNER JOIN VENDA VDA 	 ON CLI.IDCLIENTE = VDA.IDCLIENTE
+														INNER JOIN MOVIMENTO MOV ON CAST(SUBSTRING(MOV.IDORIGEM FROM 4) AS INTEGER) = VDA.IDVENDA
+											GROUP BY	CLI.NOME,
+														CLI.CIDADE,
+														CLI.UF
+											) X
+								   )
+ORDER BY 	CLI.NOME

@@ -1,0 +1,34 @@
+SELECT  X.DATA_VENDIDA AS DATA_VENDIDA,
+        X.QTD_ATU AS QTD_ATU,
+        X.QTD_ANT AS QTD_ANT,
+        CASE WHEN (SUM(X.QTD_ANT)= 0) THEN
+                   (100)
+              ELSE
+                   ((SUM(X.QTD_ATU)-SUM(X.QTD_ANT)) / SUM(X.QTD_ANT)) * 100   
+        END         AS VARIACAO
+     FROM (
+     
+ SELECT vda.data_venda  AS  DATA_VENDIDA,
+        SUM(MOV.QUANTIDADE) AS QTD_ATU,
+        0                   AS QTD_ANT
+     FROM VENDA VDA
+                LEFT JOIN MOVIMENTO MOV ON 
+                CAST(SUBSTRING(MOV.IDORIGEM FROM 4)AS INTEGER )=VDA.IDVENDA
+      WHERE MOV.DATA_MOVIMENTO = '31/12/2016'  
+       GROUP BY vda.data_venda
+ UNION ALL
+ 
+ SELECT vda.data_venda  AS  DATA_VENDIDA,
+         0                   AS QTD_ATU,
+        SUM(MOV.QUANTIDADE) AS QTD_ANTSA
+       
+     FROM VENDA VDA
+                LEFT JOIN MOVIMENTO MOV ON 
+                CAST(SUBSTRING(MOV.IDORIGEM FROM 4)AS INTEGER )=VDA.IDVENDA
+      WHERE MOV.DATA_MOVIMENTO = '01/01/2015'
+      
+        GROUP vda.data_venda    
+      )X
+      GROUP BY X.QTD_ATU,
+               X.QTD_ANT,
+               X.DATA_VENDA

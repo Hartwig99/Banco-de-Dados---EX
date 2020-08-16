@@ -1,0 +1,13 @@
+SELECT CP.IDCOMPRA AS MOVIMENTOS_COMPRA,
+        CP.DATA_COMPRA,
+        MOV.IDMOVIMENTO
+       
+   FROM COMPRA CP
+                LEFT JOIN MOVIMENTO MOV ON 
+                 CAST(SUBSTRING(MOV.IDORIGEM FROM 4)AS INTEGER )=CP.IDCOMPRA
+                
+                
+                WHERE MOV.IDMOVIMENTO IS NULL
+                
+ 
+  

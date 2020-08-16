@@ -1,0 +1,34 @@
+--04-Escreva uma consulta que liste a quantidade e o valor total comprado por cliente em 2016.
+SELECT 
+         X.PRODUTO,
+         X.VAL_COMPRADO,
+         X.QTD_COMPRADA,
+         X.DATA_COMPRADA
+         
+    FROM (  SELECT CMP.descricao     AS PRODUTO,
+                   CPA.DATA_COMPRA     AS DATA_COMPRADA,
+                   SUM(CMP.QTD_COMPRADA) AS QTD_COMPRADA,
+                   SUM(CMP.VAL_COMPRADO)      AS VAL_COMPRADO   
+              FROM COMPRA CPA
+                   
+                   RIGHT JOIN (  SELECT PRO.DESCRICAO,
+                                        PRO.IDPRODUTO,
+                                        SUM(MOV.QUANTIDADE) AS QTD_COMPRADA,
+                                        SUM(PRO.PRECO)      AS VAL_COMPRADO
+                                                 
+                                   FROM PRODUTO PRO
+                                      
+                                        INNER JOIN MOVIMENTO MOV ON 
+                                        MOV.IDPRODUTO = PRO.IDPRODUTO
+                                    
+                               GROUP BY PRO.DESCRICAO,
+                                        PRO.IDPRODUTO
+                                           
+                              ) CMP ON CMP.IDPRODUTO = CPA.IDCOMPRA
+                                
+                               WHERE EXTRACT ('YEAR' FROM CPA.DATA_COMPRA) = 2016
+              GROUP BY CMP.DESCRICAO,
+                       CPA.DATA_COMPRA 
+                       
+         ) X
+        

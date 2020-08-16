@@ -1,0 +1,27 @@
+16 – Escreva uma consulta que mostre os nomes dos fornecedores dos produtos que tiveram
+valor vendido acima da média.
+
+
+SELECT	FORN.NOME_FANTASIA		 		AS FORNECEDOR,
+		SUM(MOV.QUANTIDADE * PRO.PRECO)	AS TOTAL_VENDA_ACIMA_MEDIA
+FROM	FORNECEDOR FORN
+                        INNER JOIN COMPRA CMP 	 ON CMP.IDFORNECEDOR = FORN.IDFORNECEDOR
+                        INNER JOIN MOVIMENTO MOV ON CAST(SUBSTRING(MOV.IDORIGEM FROM 4) AS INTEGER) = CMP.IDCOMPRA
+                        INNER JOIN PRODUTO PRO	 ON PRO.IDPRODUTO = MOV.IDPRODUTO
+            WHERE MOV.TIPO_MOVIMENTO = 'S'
+GROUP BY	FORN.NOME_FANTASIA
+
+        HAVING		SUM(MOV.QUANTIDADE * PRO.PRECO)	> (
+                                                            SELECT	AVG(X.TOTAL_VENDA)	AS MEDIA
+                                                            FROM	(
+                                                                        SELECT		FORN.NOME_FANTASIA		 		AS FORNECEDOR,
+                                                                                    SUM(MOV.QUANTIDADE * PRO.PRECO)	AS TOTAL_VENDA
+                                                                        FROM FORNECEDOR FORN
+																	INNER JOIN COMPRA CMP 	 ON CMP.IDFORNECEDOR = FORN.IDFORNECEDOR
+																	INNER JOIN MOVIMENTO MOV ON CAST(SUBSTRING(MOV.IDORIGEM FROM 4) AS INTEGER) = CMP.IDCOMPRA
+																	INNER JOIN PRODUTO PRO	 ON PRO.IDPRODUTO = MOV.IDPRODUTO
+                                                                WHERE 		MOV.TIPO_MOVIMENTO = 'S'
+														GROUP BY	FORN.NOME_FANTASIA
+														) X
+												)
+ORDER BY 	FORN.NOME_FANTASIA
